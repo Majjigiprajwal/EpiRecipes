@@ -9,8 +9,8 @@ This project is a full-stack recipe search application that utilizes Flask for t
 - [Setup Instructions](#setup-instructions)
 - [Running the Application](#running-the-application)
 - [API Endpoints](#api-endpoints)
-- [Contributing](#contributing)
-- [License](#license)
+- [Demo](#demo)
+
 
 ## Features
 
@@ -126,3 +126,8 @@ Once both the backend and frontend are running, you can access the application i
   - **Parameters:** 
     - `query`: The partial keyword to get suggestions for (required).
     -`Description`: Returns a list of suggested recipe names or ingredients based on the provided partial keyword.
+
+## Demo
+
+[Watch the demo video](https://youtu.be/NcnYOAwrSEg)
+
