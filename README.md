@@ -20,7 +20,7 @@ This project is a full-stack recipe search application that utilizes Flask for t
 
 ## Technologies
 
-- **Frontend:** React, TailwindCSS, Lucide React
+- **Frontend:** React, TailwindCSS, Lucide React, React-Router-Dom
 - **Backend:** Flask
 - **Database:** OpenSearch
 - **Other:** Axios for API requests, useDebounce for debouncing search input
