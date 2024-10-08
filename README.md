@@ -56,9 +56,50 @@ This project is a full-stack recipe search application that utilizes Flask for t
      pip install -r requirements.txt
      ```
 
-3. **Set Up OpenSearch:**
-   - Follow [OpenSearch installation instructions](https://opensearch.org/docs/latest/install-and-manage/install-opensearch/) to install OpenSearch locally.
-   - Ensure OpenSearch is running without security enabled for development purposes.
+3. ## Setting Up OpenSearch Locally
+
+Follow these steps to set up OpenSearch locally without security enabled for development:
+
+ **Download OpenSearch:**
+   - Download the latest OpenSearch bundle from [here](https://opensearch.org/docs/latest/install-and-manage/install-opensearch/).
+   - Extract the downloaded files:
+     - For Windows, extract the archive using WinRAR or 7-Zip and navigate to the extracted folder.
+
+2. **Edit Configuration:**
+   - Navigate to the `config` folder and edit `opensearch.yml`:
+     ```bash
+     cd config
+     ```
+   - Add the following settings to `opensearch.yml`:
+     ```yaml
+     # Path: config/opensearch.yml
+
+     network.host: 0.0.0.0
+     http.port: 9200
+     plugins.security.disabled: true
+     ```
+
+3. **Start OpenSearch:**
+   - Navigate back to the `bin` folder and start OpenSearch:
+     - **For Linux/macOS:**
+       ```bash
+       cd ..
+       cd bin
+       ./opensearch
+       ```
+     - **For Windows:**
+       - Open a Command Prompt, navigate to the `bin` folder, and run:
+         ```bash
+         opensearch.bat
+         ```
+
+4. **Verify OpenSearch:**
+   - Open `http://localhost:9200` in your browser or run:
+     ```bash
+     curl -X GET "http://localhost:9200"
+     ```
+   - If successful, OpenSearch is now running locally without security enabled.
+
 
 4. **Load Recipe Data:**
    - Run the script to ingest recipe data into OpenSearch:
@@ -68,6 +109,7 @@ This project is a full-stack recipe search application that utilizes Flask for t
 
 5. **Run the Backend:**
    - Ensure you are in the backend directory and the virtual environment is activated.
+   - Makesure you have ingest the data before starting the server.
    - Start the Flask application:
      ```bash
      python app.py
@@ -97,35 +139,129 @@ Once both the backend and frontend are running, you can access the application i
 
 ## API Endpoints
 
-- **Search Recipes**
-  - **Endpoint:** `/search`
-  - **Method:** `GET`
-  - **Parameters:** 
-    - `recipe`: Search keyword
-    - `page`: Page number (default: 1)
-    - `limit`: Number of recipes per page (default: 15)
+### 1. **Search Recipes**
+- **Endpoint:** `/search`
+- **Method:** `GET`
+- **Description:** This endpoint allows users to search for recipes based on a keyword. It returns a paginated list of recipes that match the search term.
+- **Parameters:**
+  - `recipe` (string, required): The search keyword used to find recipes. This parameter will be used to query the recipe database for matches.
+  - `page` (integer, optional, default: 1): The page number for paginated results. This allows users to navigate through multiple pages of search results.
+  - `limit` (integer, optional, default: 15): The maximum number of recipes to return per page. This controls the size of the returned dataset, enhancing performance and usability.
+  
+- **Response:**
+  - A JSON object containing the list of recipes that match the search keyword, along with pagination details (current page, total pages, etc.).
+  - Example:
+    ```json
+    {
+      "total_pages": 10,
+      "recipes": [
+        {
+          "id": "1",
+          "title": "Spaghetti Carbonara",
+          "description": "A classic Italian pasta dish.",
+          "ingredients": ["spaghetti", "eggs", "cheese", "pepper"],
+          "nutrition": {
+             "calories": 600,
+             "protein": "20g",
+             "fat": "15g",
+             "carbs": "70g"
+          },
+        }
+      ]
+    }
+    ```
 
-- **Filter Recipes**
-  - **Endpoint:** `/search/filter`
-  - **Method:** `GET`
-  - **Parameters:**
-    - `recipe`: Search keyword
-    - `page`: Page number (default: 1)
-    - `limit`: Number of recipes per page (default: 10)
-    - `filters`: JSON string of filter criteria
+---
 
-- **Get Recipe Details**
-  - **Endpoint:** `/search/recipe/<recipe_id>`
-  - **Method:** `GET`
-  - **Parameters:** 
-    - `recipe_id`: ID of the recipe to retrieve details for
+### 2. **Filter Recipes**
+- **Endpoint:** `/search/filter`
+- **Method:** `GET`
+- **Description:** This endpoint retrieves recipes based on a search keyword and specific filtering criteria. Users can apply multiple filters to refine their search results.
+- **Parameters:**
+  - `recipe` (string, required): The keyword for searching recipes.
+  - `page` (integer, optional, default: 1): The page number for paginated results.
+  - `limit` (integer, optional, default: 10): The maximum number of recipes to return per page.
+  - `filters` (string, required): A JSON string containing filter criteria. Filters can include categories, dietary restrictions (e.g., vegan, gluten-free), calorie range, etc.
 
-- **Search Suggestions**
-  - **Endpoint:** `/suggestions`
-  - **Method:** `GET`
-  - **Parameters:** 
-    - `query`: The partial keyword to get suggestions for (required).
-    -`Description`: Returns a list of suggested recipe names or ingredients based on the provided partial keyword.
+- **Response:**
+  - A JSON object with a list of filtered recipes matching the search and filter criteria.
+  - Example:
+    ```json
+    {
+      "total_pages": 5,
+      "filtered_recipes": [
+        {
+          "id": "2",
+          "title": "Vegan Tacos",
+          "description": "Delicious tacos made with plant-based ingredients.",
+          "ingredients": ["tortillas", "beans", "avocado", "salsa"],
+          "nutrition": {
+             "calories": 600,
+             "protein": "20g",
+             "fat": "15g",
+             "carbs": "70g"
+         },
+        }
+      ]
+    }
+    ```
+
+---
+
+### 3. **Get Recipe Details**
+- **Endpoint:** `/search/recipe/<recipe_id>`
+- **Method:** `GET`
+- **Description:** This endpoint retrieves detailed information about a specific recipe identified by its unique ID. It provides comprehensive data, including ingredients, instructions, and nutritional information.
+- **Parameters:**
+  - `recipe_id` (string, required): The unique identifier of the recipe for which details are requested.
+
+- **Response:**
+  - A JSON object containing detailed information about the requested recipe.
+  - Example:
+    ```json
+    {
+      "id": "1",
+      "title": "Spaghetti Carbonara",
+      "description": "A classic Italian pasta dish.",
+      "ingredients": [
+        {"name": "spaghetti", "amount": "200g"},
+        {"name": "eggs", "amount": "3"},
+        {"name": "cheese", "amount": "100g"},
+        {"name": "pepper", "amount": "to taste"}
+      ],
+      "instructions": "Cook spaghetti. Mix eggs and cheese. Combine all ingredients.",
+      "nutrition": {
+        "calories": 600,
+        "protein": "20g",
+        "fat": "15g",
+        "carbs": "70g"
+      },
+    }
+    ```
+
+---
+
+### 4. **Search Suggestions**
+- **Endpoint:** `/suggestions`
+- **Method:** `GET`
+- **Description:** This endpoint provides a list of suggested recipe names or ingredients based on a partial keyword entered by the user. It helps users discover recipes as they type.
+- **Parameters:**
+  - `query` (string, required): The partial keyword for which suggestions are requested. This should be a string representing the start of a recipe name or ingredient.
+
+- **Response:**
+  - A JSON array containing suggested recipes or ingredients that match the partial keyword.
+  - Example:
+    ```json
+    {
+      "suggestions": [
+        "Rice Pudding",
+        "Rice Salad",
+        "Chicken Fried Rice",
+        "Rice Noodles"
+      ]
+    }
+    ```
+
 
 ## Demo
 
