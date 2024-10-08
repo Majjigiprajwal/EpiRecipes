@@ -6,13 +6,11 @@ import axios from 'axios'
 import useDebounce from '../hooks/useDebounce';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-
 const Home = () => {
   const [recipes, setRecipes] = useState([]);
-  const [totalPages,setTotalPages] = useState(0)
-  const [query,setQuery] = useState('')
-  const [page,setPage] = useState(1)
-  const [isFilterApplied,setIsFilterApplied] = useState(false)
+  const [totalPages, setTotalPages] = useState(0)
+  const [query, setQuery] = useState('')
+  const [page, setPage] = useState(1)
   const [filters, setFilters] = useState({
     categories: [],
     dietary: [],
@@ -24,30 +22,27 @@ const Home = () => {
     },
   });
 
-  const fetchRecipes = async ()=>{
-        try{
-               let response = await axios.get(`http://127.0.0.1:5000/search?recipe=${query}&page=${page}&limit=${15}`)
-               setRecipes(response.data.recipes)
-               setTotalPages(Math.ceil(response.data.total / 15));
-               console.log(response.data)
-        }
-        catch(error){
-                console.log(error)
-        }
+  const areFiltersApplied = () => {
+    return filters.categories.length > 0 ||
+           filters.dietary.length > 0 ||
+           filters.rating > 0 ||
+           filters.nutrients.calories.max !== '' ||
+           filters.nutrients.protein.max !== '' ||
+           filters.nutrients.fat.max !== '';
+  };
+
+  const fetchRecipes = async () => {
+    try {
+      let response = await axios.get(`http://127.0.0.1:5000/search?recipe=${query}&page=${page}&limit=${15}`)
+      setRecipes(response.data.recipes)
+      setTotalPages(Math.ceil(response.data.total / 15));
+    }
+    catch(error) {
+      console.log(error)
+    }
   }
 
-  
-  useEffect(() => {
-    debouncedFetchRecipes();
-    if(query.length == 0){
-      fetchRecipes()
-    }
-  }, [query]);
-
-  const debouncedFetchRecipes = useDebounce(fetchRecipes, 400);
-
-
-   const fetchFilteredRecipes = async () => {
+  const fetchFilteredRecipes = async () => {
     try {
       const response = await axios.get('http://127.0.0.1:5000/search/filter', {
         params: {
@@ -59,34 +54,40 @@ const Home = () => {
       });
       setRecipes(response.data.recipes)
       setTotalPages(Math.ceil(response.data.total / 15));
-      console.log(response.data)
     } catch (error) {
       console.log(error);
     }
   };
 
-  useEffect(()=>{
-      setPage(1)
-      setIsFilterApplied(true)
-  },[filters])
-
-
-  const debouncedFetchFilteredRecipes = useDebounce(fetchFilteredRecipes, 400);
-
+  useEffect(() => {
+    if (areFiltersApplied()) {
+      debouncedFetchFilteredRecipes();
+    } else {
+      debouncedFetchRecipes();
+    }
+  }, [filters, page]);
 
   useEffect(() => {
-    if(isFilterApplied){
-      debouncedFetchFilteredRecipes();
+    if (query.length === 0) {
+      fetchRecipes();
     }
-    else{
-      console.log('called')
-      debouncedFetchRecipes()
-    }
+    debouncedFetchRecipes();
+    setPage(1);
+  }, [query]);
 
-  }, [filters, page]); 
+  const debouncedFetchRecipes = useDebounce(fetchRecipes, 400);
+  const debouncedFetchFilteredRecipes = useDebounce(fetchFilteredRecipes, 400);
+
+  useEffect(() => {
+    setPage(1)
+  }, [filters])
 
   const handleSearch = () => {
-    fetchRecipes()
+    if (areFiltersApplied()) {
+      fetchFilteredRecipes();
+    } else {
+      fetchRecipes();
+    }
   };
 
   const handleNextPage = () => {
@@ -103,22 +104,21 @@ const Home = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold  mb-8 text-center font-serif text-orange-400">Discover Delicious Recipes</h1>
+      <h1 className="text-4xl font-bold mb-8 text-center font-serif text-orange-400">Discover Delicious Recipes</h1>
       
-      <div className="mb-8 ">
+      <div className="mb-8">
         <SearchBar onSearch={handleSearch} setQuery={setQuery} query={query} />
       </div>
 
       <div className="flex flex-col md:flex-row">
-        
-        <div className="md:w-1/4 pr-8 ">
+        <div className="md:w-1/4 pr-8">
           <Filters filters={filters} setFilters={setFilters} />
         </div>
 
-        <div className="md:w-3/4 ">
-           <RecipeList recipes={recipes} />
-           <div className="flex justify-center items-center mt-10 gap-5">
-           <button
+        <div className="md:w-3/4">
+          <RecipeList recipes={recipes} />
+          <div className="flex justify-center items-center mt-10 gap-5">
+            <button
               className={`flex items-center justify-center w-10 h-10 rounded-full shadow-md ${
                 page === 1 ? 'bg-gray-400' : 'bg-black hover:bg-orange-500'
               } text-white`}
