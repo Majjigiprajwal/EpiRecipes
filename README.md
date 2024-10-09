@@ -36,7 +36,7 @@ This project is a full-stack recipe search application that utilizes Flask for t
 2. **Set Up Backend:**
    - Navigate to the backend directory:
      ```bash
-     cd backend
+     cd server
      ```
    - Create a virtual environment:
      ```bash
@@ -119,7 +119,7 @@ Follow these steps to set up OpenSearch locally without security enabled for dev
 6. **Set Up Frontend:**
    - Open a new terminal and navigate to the frontend directory:
      ```bash
-     cd frontend
+     cd client
      ```
    - Install frontend dependencies:
      ```bash
